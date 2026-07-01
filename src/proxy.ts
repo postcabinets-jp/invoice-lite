@@ -23,6 +23,18 @@ function rateLimit(ip: string): boolean {
 // ── End Rate Limiting ──
 
 
+const protectedPaths = [
+  '/dashboard',
+  '/invoices',
+  '/clients',
+  '/projects',
+  '/time',
+  '/expenses',
+  '/recurring',
+  '/reports',
+  '/settings',
+]
+
 export async function proxy(request: NextRequest) {
   // Rate limit /api/* routes
   if (request.nextUrl.pathname.startsWith('/api/')) {
@@ -37,8 +49,17 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // If Supabase is not configured, skip auth and pass through
+  const isProtected = protectedPaths.some((p) =>
+    request.nextUrl.pathname.startsWith(p),
+  )
+
+  // If Supabase is not configured, redirect protected paths to login
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    if (isProtected) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
     return NextResponse.next({ request });
   }
 
@@ -68,22 +89,6 @@ export async function proxy(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-
-  const protectedPaths = [
-    '/dashboard',
-    '/invoices',
-    '/clients',
-    '/projects',
-    '/time',
-    '/expenses',
-    '/recurring',
-    '/reports',
-    '/settings',
-  ]
-
-  const isProtected = protectedPaths.some((p) =>
-    request.nextUrl.pathname.startsWith(p),
-  )
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone()
