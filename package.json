@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "rm -f .next/lock",
+    "predev": "rm -f .next/lock .next/dev/lock",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
