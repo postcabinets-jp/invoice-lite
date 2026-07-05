@@ -1,3 +1,6 @@
+-- Enable required extensions
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+
 -- =============================================
 -- ORGANIZATIONS（マルチテナント基盤）
 -- =============================================
@@ -82,7 +85,7 @@ CREATE TABLE clients (
   currency        TEXT,
   notes           TEXT,
   is_archived     BOOLEAN NOT NULL DEFAULT false,
-  portal_token    TEXT UNIQUE DEFAULT encode(gen_random_bytes(32), 'hex'),
+  portal_token    TEXT UNIQUE DEFAULT encode(extensions.gen_random_bytes(32), 'hex'),
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
